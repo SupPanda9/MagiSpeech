@@ -58,6 +58,7 @@ class CameraGroup(pygame.sprite.Group):
         floor_offset_position = self.floor_rect.topleft - self.offset
         self.display_surface.blit(self.floor_surf, floor_offset_position)
 
+        #sort the drawing order by the y coordinate of the object/player
         for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.centery):
             offset_position = sprite.rect.topleft - self.offset
             self.display_surface.blit(sprite.image, offset_position)
