@@ -11,15 +11,13 @@ class Player(Entity):
         
         # the hitbox is smaller than the rectangle to create illusion of depth by showing
         # small part of the player above objects, and allow him to move easier in one tile
-        #  
+        # sized spaces
         self.hitbox = self.rect.inflate(-2, -26)
 
-        
         self.import_player_assets()
-        print(self.animations)
         self.orientation = "down"
 
-        self.speed = 5
+        self.speed = 10
         self.obstacle_sprites = obstacle_sprites
     
 
@@ -81,6 +79,12 @@ class Player(Entity):
         if self.direction.x == 0 and self.direction.y == 0:
             if not "idle" in self.orientation:
                 self.orientation = self.orientation + "_idle"
+
+    def move_to(self, position):
+        self.rect.topleft = position
+        self.rect = self.image.get_rect(topleft = self.rect.topleft)
+
+        self.hitbox = self.rect.inflate(-2, -26)
 
     def update(self):
         self.input()

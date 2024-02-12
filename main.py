@@ -1,6 +1,6 @@
 import pygame, sys
 from settings import *
-from level import Level
+from level import World, Level
 
 class Game:
     def __init__(self):
@@ -9,7 +9,7 @@ class Game:
         pygame.display.set_caption("MagiSpeech")
         self.clock = pygame.time.Clock()
 
-        self.level = Level()
+        self.world = World()
 
     def run(self):
         while True:
@@ -19,7 +19,9 @@ class Game:
                     sys.exit()
 
             self.screen.fill("black")
-            self.level.run()
+            
+            self.world.level.run() 
+
             pygame.display.update()
             self.clock.tick(FPS)
 
