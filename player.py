@@ -4,7 +4,7 @@ from helpers import import_folder
 from entity import Entity
 
 class Player(Entity):
-    def __init__(self, position, groups, obstacle_sprites):
+    def __init__(self, position, groups, obstacle_sprites, create_attack, destroy_attack):
         super().__init__(groups)
         self.image = pygame.image.load('assets/player/down/down_1.png').convert_alpha()
         self.rect = self.image.get_rect(topleft = position)
@@ -15,33 +15,50 @@ class Player(Entity):
         self.hitbox = self.rect.inflate(-2, -26)
 
         self.import_player_assets()
-        self.orientation = "down"
+        self.status = "down"
 
-        self.speed = 10
+        self.attacking = False
+        self.attack_time = None
+
+        self.cooldown = {
+            "attack" : 300
+        }
+
+        self.speed = 5
         self.obstacle_sprites = obstacle_sprites
+
+        self.create_attack = create_attack
+        self.destroy_attack = destroy_attack
     
 
     def input(self):
-        keys = pygame.key.get_pressed()
+        if not self.attacking:
+            keys = pygame.key.get_pressed()
 
-        # movement input
-        if keys[pygame.K_UP]:
-            self.direction.y = -1
-            self.orientation = "up"
-        elif keys[pygame.K_DOWN]:
-            self.direction.y = 1
-            self.orientation = "down"
-        else:
-            self.direction.y = 0
-        
-        if keys[pygame.K_RIGHT]:
-            self.direction.x = 1
-            self.orientation = "right"
-        elif keys[pygame.K_LEFT]:
-            self.direction.x = -1
-            self.orientation = "left"
-        else:
-            self.direction.x = 0
+            # movement input
+            if keys[pygame.K_UP]:
+                self.direction.y = -1
+                self.status = "up"
+            elif keys[pygame.K_DOWN]:
+                self.direction.y = 1
+                self.status = "down"
+            else:
+                self.direction.y = 0
+            
+            if keys[pygame.K_RIGHT]:
+                self.direction.x = 1
+                self.status = "right"
+            elif keys[pygame.K_LEFT]:
+                self.direction.x = -1
+                self.status = "left"
+            else:
+                self.direction.x = 0
+
+            # make the voice logic later
+            if keys[pygame.K_SPACE]:
+                self.attacking = True
+                self.attack_time = pygame.time.get_ticks()
+                self.create_attack()
 
     def import_player_assets(self):
         character_path = "assets/player/"
@@ -64,8 +81,17 @@ class Player(Entity):
             full_path = character_path + animation
             self.animations[animation] = import_folder(full_path)
 
+    def cooldowns(self):
+        current_time = pygame.time.get_ticks()
+
+        if self.attacking:
+            if current_time - self.attack_time >= self.cooldown["attack"] +  weapon_data["sword"]["cooldown"]:
+                print("yes")
+                self.attacking = False
+                self.destroy_attack()
+
     def animate(self):
-        animation = self.animations[self.orientation]
+        animation = self.animations[self.status]
         self.frame_index += self.animation_speed
 
 
@@ -75,10 +101,22 @@ class Player(Entity):
         self.image = animation[int(self.frame_index)]
         self.rect = self.image.get_rect(center = self.hitbox.center)
 
-    def get_orientation(self):
-        if self.direction.x == 0 and self.direction.y == 0:
-            if not "idle" in self.orientation:
-                self.orientation = self.orientation + "_idle"
+    def get_status(self):
+        if self.direction.x == 0 and self.direction.y == 0 and not "attack" in self.status:
+            if not "idle" in self.status:
+                self.status = self.status + "_idle"
+
+        if self.attacking:
+            self.direction.x = 0
+            self.direction.y = 0
+            if not "attack" in self.status:
+                if "idle" in self.status:
+                    self.status = self.status.replace("_idle", "_attack")
+                else:
+                    self.status = self.status + "_attack"
+        else:
+            if "attack" in self.status:
+                self.status = self.status.replace("_attack", "")
 
     def move_to(self, position):
         self.rect.topleft = position
@@ -88,6 +126,7 @@ class Player(Entity):
 
     def update(self):
         self.input()
-        self.get_orientation()
+        self.cooldowns()
+        self.get_status()
         self.animate()
         self.move(self.speed)

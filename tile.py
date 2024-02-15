@@ -11,5 +11,9 @@ class Tile(pygame.sprite.Sprite):
         if self.sprite_type == "map_transition":
             self.next_map = special
 
-        self.rect = self.image.get_rect(topleft = position)
+        if sprite_type == "object":
+            self.rect = self.image.get_rect(topleft = (position[0], position[1] - TILESIZE))
+        else:
+            self.rect = self.image.get_rect(topleft = position)
+            
         self.hitbox = self.rect.inflate(0, -10)

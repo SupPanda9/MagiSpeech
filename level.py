@@ -3,6 +3,7 @@ from settings import *
 from tile import Tile
 from player import Player
 from helpers import *
+from weapon import Weapon
 
 
 class World:
@@ -13,9 +14,14 @@ class World:
         self.from_map = 0
         self.changed_map = False
         self.level = Level(0, self)
-        # get (x,y) from Level's create_map function and put the player there
 
-        self.player = Player(self.position, [self.level.visible_sprites], self.level.obstacle_sprites)
+        self.current_attack = None
+
+        self.player = Player(self.position, 
+                            [self.level.visible_sprites], 
+                            self.level.obstacle_sprites,
+                            self.create_physical_attack,
+                            self.destroy_physical_attack)
 
     def change_map(self, map_number):
         self.player.remove(self.level.visible_sprites)
@@ -31,6 +37,14 @@ class World:
         self.player.obstacle_sprites = self.level.obstacle_sprites
         self.player.add(self.level.visible_sprites)
 
+    def create_physical_attack(self):
+        self.current_attack = Weapon(self.player, [self.level.visible_sprites, self.level.attack_sprites])
+
+    def destroy_physical_attack(self):
+        if self.current_attack:
+            self.current_attack.kill()
+        self.current_attack = None
+
 
 class Level:
     def __init__(self, map_number, world):
@@ -40,6 +54,8 @@ class Level:
         self.obstacle_sprites = pygame.sprite.Group()
         self.map_transition_sprites = pygame.sprite.Group()
 
+        self.attack_sprites = pygame.sprite.Group()
+
         self.world = world
         self.create_map()
 
@@ -47,7 +63,11 @@ class Level:
         layouts = {
             "boundary" : import_csv_layout(f"assets/map/level_{self.map_number}_FloorBlocks.csv"),
             "map_transition" : import_csv_layout(f"assets/map/level_{self.map_number}_MapTransition.csv"),
+            "object": import_csv_layout(f"assets/map/level_{self.map_number}_Objects.csv"),
             "entities" : import_csv_layout(f"assets/map/level_{self.map_number}_Entities.csv")
+        }
+        graphics = {
+            "objects" : import_folder("assets/objects")
         }
 
         for style, layout in layouts.items():       
@@ -59,25 +79,29 @@ class Level:
                         
                         if style == "boundary":
                             Tile((x,y), [self.obstacle_sprites], "invisible", None)
+                        
+                        if style == "object":
+                            surf = graphics["objects"][int(col)]
+                            Tile((x,y), [self.visible_sprites, self.obstacle_sprites], "object", None, surf)
+                        
                         if style == "map_transition":
                             Tile((x,y), [self.map_transition_sprites], "map_transition", col)
                             
                             if self.world.changed_map and col == str(self.world.from_map):
                                 if x == 0:
                                     self.world.position = (x + TILESIZE + 20, y)
-                                elif x == self.visible_sprites.floor_surf.get_width():
-                                    self.world.position = (x - TILESIZE - 1, y)
+                                elif x + TILESIZE == self.visible_sprites.floor_surf.get_width():
+                                    self.world.position = (x - TILESIZE - 20, y)
                                 elif y == 0:
-                                    self.world.position = (x, y + TILESIZE + 1)
+                                    self.world.position = (x, y + TILESIZE + 20)
+                                elif y + TILESIZE == self.visible_sprites.floor_surf.get_height():
+                                    self.world.position = (x, y - TILESIZE - 20)
                                 else:
-                                    self.world.position = (x, y - TILESIZE - 1)
+                                    self.world.position = (x, y + TILESIZE + 20)
                                 
                         if style == "entities":
                             if not self.world.changed_map and col == "394":
                                 self.world.position = (x,y)
-
-
-                    # put the player at the right coordinates
 
     def check_map_transition(self):
         for sprite in self.map_transition_sprites:
