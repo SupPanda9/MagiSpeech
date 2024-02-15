@@ -4,7 +4,7 @@ from tile import Tile
 from player import Player
 from helpers import *
 from weapon import Weapon
-
+from enemy import Enemy
 
 class World:
     def __init__(self):
@@ -38,7 +38,7 @@ class World:
         self.player.add(self.level.visible_sprites)
 
     def create_physical_attack(self):
-        self.current_attack = Weapon(self.player, [self.level.visible_sprites, self.level.attack_sprites])
+        self.current_attack = Weapon(self.player, [self.level.visible_sprites, self.level.damaging_sprites])
 
     def destroy_physical_attack(self):
         if self.current_attack:
@@ -54,7 +54,8 @@ class Level:
         self.obstacle_sprites = pygame.sprite.Group()
         self.map_transition_sprites = pygame.sprite.Group()
 
-        self.attack_sprites = pygame.sprite.Group()
+        self.damaging_sprites = pygame.sprite.Group()
+        self.damageable_sprites = pygame.sprite.Group()
 
         self.world = world
         self.create_map()
@@ -102,6 +103,21 @@ class Level:
                         if style == "entities":
                             if not self.world.changed_map and col == "394":
                                 self.world.position = (x,y)
+                            else:
+                                if col == "390" : 
+                                    monster_name = "bamboo"
+                                elif col == "391":
+                                    monster_name = "spirit"
+                                elif col == "392":
+                                    monster_name = "raccoon"
+                                else:
+                                    monster_name = "squid"
+                                Enemy(monster_name, 
+                                    (x,y), 
+                                    [self.visible_sprites, 
+                                    self.damageable_sprites], 
+                                    self.obstacle_sprites,
+                                    self.damage_player)
 
     def check_map_transition(self):
         for sprite in self.map_transition_sprites:
@@ -112,9 +128,26 @@ class Level:
                 # Call the change_map method with those parameters
                 self.world.change_map(next_map)
 
+    def player_attack(self):
+        if self.damaging_sprites:
+            for damaging_sprite in self.damaging_sprites:
+                collision_sprites = pygame.sprite.spritecollide(damaging_sprite, self.damageable_sprites, False)
+                if collision_sprites:
+                    for target_sprite in collision_sprites:
+                        target_sprite.get_damage(self.world.player, damaging_sprite.sprite_type)
+
+    def damage_player(self, amount, attack_type):
+        if self.world.player.vulnerable:
+            self.world.player.health -= amount
+            print(f"{self.world.player.health}")
+            self.world.player.vulnerable = False
+            self.world.player.hurt_time = pygame.time.get_ticks()
+
     def run(self): 
         self.visible_sprites.custom_draw(self.world.player)
         self.visible_sprites.update()
+        self.visible_sprites.enemy_update(self.world.player)
+        self.player_attack()
         self.check_map_transition()
 
 
@@ -144,3 +177,8 @@ class CameraGroup(pygame.sprite.Group):
         for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.centery):
             offset_position = sprite.rect.topleft - self.offset
             self.display_surface.blit(sprite.image, offset_position)
+
+    def enemy_update(self, player):
+        enemy_sprites = [sprite for sprite in self.sprites() if hasattr(sprite, "sprite_type") and sprite.sprite_type == "enemy"]
+        for enemy in enemy_sprites:
+            enemy.enemy_update(player)

@@ -20,16 +20,23 @@ class Player(Entity):
         self.attacking = False
         self.attack_time = None
 
+        self.obstacle_sprites = obstacle_sprites
         self.cooldown = {
-            "attack" : 300
+            "attack" : 300,
+            "invincibility" : 500
         }
 
-        self.speed = 5
-        self.obstacle_sprites = obstacle_sprites
+        self.stats = player_stats
+        self.health = self.stats["health"]
+        self.energy = self.stats["energy"]
+        self.exp = 123
+        self.speed = self.stats["speed"]
 
         self.create_attack = create_attack
         self.destroy_attack = destroy_attack
-    
+
+        self.vulnerable = True
+        self.hit_time = None
 
     def input(self):
         if not self.attacking:
@@ -86,14 +93,21 @@ class Player(Entity):
 
         if self.attacking:
             if current_time - self.attack_time >= self.cooldown["attack"] +  weapon_data["sword"]["cooldown"]:
-                print("yes")
                 self.attacking = False
                 self.destroy_attack()
+
+        if not self.vulnerable:
+            if current_time - self.hurt_time >= self.cooldown["invincibility"]:
+                self.vulnerable = True
+
+    def get_full_weapon_damage(self):
+        base_damage = self.stats["attack"]
+        weapon_damage = weapon_data["sword"]["damage"]
+        return base_damage + weapon_damage
 
     def animate(self):
         animation = self.animations[self.status]
         self.frame_index += self.animation_speed
-
 
         if self.frame_index >= len(animation):
             self.frame_index = 0
