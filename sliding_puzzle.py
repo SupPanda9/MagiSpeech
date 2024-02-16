@@ -1,5 +1,5 @@
 import pygame
-from random import choice
+from random import choice, randint
 
 TILE_SIZE = 200
 TILE_NUM = 3
@@ -8,19 +8,18 @@ PUZZLE_SIZE = TILE_SIZE * TILE_NUM
 class Game:
     def __init__(self, world):
         self.screen = pygame.display.get_surface()
-        # pygame.display.set_caption('Sliding Puzzle')
         self.clock = pygame.time.Clock()
         self.world = world
 
     def create_tiles(self):
-        image = pygame.image.load('assets/map/level_0.png')
-        image = pygame.transform.scale(image, (PUZZLE_SIZE, PUZZLE_SIZE))
+        self.image = pygame.image.load(f'assets/sliding_puzzle/{randint(0,7)}.jpg')
+        self.image = pygame.transform.scale(self.image, (PUZZLE_SIZE, PUZZLE_SIZE))
         self.tiles = []
         for i in range(TILE_NUM):
             for j in range(TILE_NUM):
-                tile = image.subsurface(j * TILE_SIZE, i * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+                tile = self.image.subsurface(j * TILE_SIZE, i * TILE_SIZE, TILE_SIZE, TILE_SIZE)
                 self.tiles.append(Tile(self, tile, i, j))
-        self.tiles.pop()
+        # self.tiles.pop()
 
     def run(self):
         self.create_tiles()
@@ -28,13 +27,13 @@ class Game:
         self.running = True
         while self.running:
             self.clock.tick(60)
+            self.frame.draw(self.screen)
             for event in pygame.event.get():
                 self.frame.handle_event(event)
-            self.frame.draw(self.screen)
             pygame.display.flip()
 
     def end_game(self):
-        pygame.time.wait(400)
+        pygame.time.wait(800)
         self.running = False
         self.world.solved_mini_game = self.frame.solved
 
@@ -82,8 +81,12 @@ class Frame:
 
     def draw(self, screen):
         screen.fill((255, 255, 255))
-        for tile in self.tiles:
-            tile.draw(screen)
+        if self.solved:
+            for tile in self.tiles:
+                tile.draw(screen)
+        else:
+            for tile in self.tiles[:-1]:
+                tile.draw(screen)
         self.draw_text(screen)
 
     def draw_text(self, screen):
@@ -92,6 +95,7 @@ class Frame:
         if self.solved:
             text = self.font.render('You solved the puzzle!', True, (0, 0, 0))
             screen.blit(text, (screen.get_width() // 2 - text.get_width() // 2, screen.get_height() // 2 - text.get_height() // 2))
+            self.game.running = False
 
     def shuffle(self):
         directions = ['up', 'down', 'left', 'right']
@@ -103,8 +107,6 @@ class Frame:
         self.solved = False
 
     def move_tile(self, direction, shuffle=False):
-        if not self.shuffling and self.solved:
-            return
         if direction == 'up' and self.empty_row < TILE_NUM - 1:
             row = self.empty_row + 1
             col = self.empty_col
@@ -119,16 +121,17 @@ class Frame:
             col = self.empty_col - 1
         else:
             return
+        
         for tile in self.tiles:
-            if tile.row == row and tile.col == col:
-                tile.move(direction)
-                self.empty_row = row
-                self.empty_col = col
-                if not shuffle:
-                    self.moves += 1
-                    self.check_solution()
-                break
-
+                if tile.row == row and tile.col == col:
+                    tile.move(direction)
+                    self.empty_row = row
+                    self.empty_col = col
+                    if not shuffle:
+                        self.moves += 1
+                        self.check_solution()
+                    break
+        
     def check_solution(self):
         for i, tile in enumerate(self.tiles):
             row = i // TILE_NUM
@@ -136,6 +139,9 @@ class Frame:
             if tile.row != row or tile.col != col:
                 return
         self.solved = True
+        self.draw(self.game.screen)
+        pygame.display.flip()
+        self.game.end_game()
 
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN:
@@ -152,5 +158,3 @@ class Frame:
             elif event.key == pygame.K_SPACE:
                 self.shuffling = True
                 self.shuffle()
-        if self.solved:
-            self.game.end_game()
