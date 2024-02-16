@@ -13,7 +13,10 @@ class Tile(pygame.sprite.Sprite):
 
         if sprite_type == "object":
             self.rect = self.image.get_rect(topleft = (position[0], position[1] - TILESIZE))
+        elif sprite_type == "treasure":
+            self.rect = self.image.get_rect(topleft = position)
+            self.rect = self.rect.inflate((15,15))
         else:
             self.rect = self.image.get_rect(topleft = position)
-            
+
         self.hitbox = self.rect.inflate(0, -10)

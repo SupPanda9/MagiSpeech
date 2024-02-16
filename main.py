@@ -2,6 +2,7 @@ import pygame, sys
 from settings import *
 from level import World, Level
 
+
 class Game:
     def __init__(self):
         pygame.init()
@@ -18,8 +19,13 @@ class Game:
                     pygame.quit()
                     sys.exit()
 
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
+                    self.world.start_mini_game()
+                    
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    self.world.mini_game_active = False
+
             self.screen.fill("black")
-            
             self.world.level.run() 
 
             pygame.display.update()

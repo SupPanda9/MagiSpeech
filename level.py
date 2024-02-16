@@ -5,6 +5,7 @@ from player import Player
 from helpers import *
 from weapon import Weapon
 from enemy import Enemy
+from minigame import MiniGame
 
 class World:
     def __init__(self):
@@ -22,6 +23,10 @@ class World:
                             self.level.obstacle_sprites,
                             self.create_physical_attack,
                             self.destroy_physical_attack)
+        
+        self.current_mini_game = None
+        self.mini_game_active = False
+        self.solved_mini_game = False
 
     def change_map(self, map_number):
         self.player.remove(self.level.visible_sprites)
@@ -45,6 +50,16 @@ class World:
             self.current_attack.kill()
         self.current_attack = None
 
+    def start_mini_game(self):
+        for treasure in self.level.treasure_sprites:
+            if self.player.rect.colliderect(treasure.rect):
+                self.mini_game_active = True
+                # choose which mini game to start
+                self.current_mini_game = MiniGame(self)
+                treasure.kill()
+                # create the image of the opened chest of the corresponding type
+                break              
+
 
 class Level:
     def __init__(self, map_number, world):
@@ -56,6 +71,7 @@ class Level:
 
         self.damaging_sprites = pygame.sprite.Group()
         self.damageable_sprites = pygame.sprite.Group()
+        self.treasure_sprites = pygame.sprite.Group()
 
         self.world = world
         self.create_map()
@@ -65,10 +81,12 @@ class Level:
             "boundary" : import_csv_layout(f"assets/map/level_{self.map_number}_FloorBlocks.csv"),
             "map_transition" : import_csv_layout(f"assets/map/level_{self.map_number}_MapTransition.csv"),
             "object": import_csv_layout(f"assets/map/level_{self.map_number}_Objects.csv"),
-            "entities" : import_csv_layout(f"assets/map/level_{self.map_number}_Entities.csv")
+            "entities" : import_csv_layout(f"assets/map/level_{self.map_number}_Entities.csv"),
+            "treasures" : import_csv_layout(f"assets/map/level_{self.map_number}_Treasures.csv")
         }
         graphics = {
-            "objects" : import_folder("assets/objects")
+            "objects" : import_folder("assets/objects"),
+            "treasures" : import_folder("assets/treasure")
         }
 
         for style, layout in layouts.items():       
@@ -84,6 +102,10 @@ class Level:
                         if style == "object":
                             surf = graphics["objects"][int(col)]
                             Tile((x,y), [self.visible_sprites, self.obstacle_sprites], "object", None, surf)
+
+                        if style == "treasures":
+                            surf = graphics["treasures"][int(col)]
+                            Tile((x,y), [self.visible_sprites, self.obstacle_sprites, self.treasure_sprites], "treasure", None, surf)
                         
                         if style == "map_transition":
                             Tile((x,y), [self.map_transition_sprites], "map_transition", col)
@@ -146,9 +168,17 @@ class Level:
     def run(self): 
         self.visible_sprites.custom_draw(self.world.player)
         self.visible_sprites.update()
-        self.visible_sprites.enemy_update(self.world.player)
-        self.player_attack()
-        self.check_map_transition()
+        
+        if self.world.mini_game_active:
+            self.world.current_mini_game.run()
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_ESCAPE]:
+                self.world.mini_game_active = False
+            # run a mini_game 
+        else:
+            self.visible_sprites.enemy_update(self.world.player)
+            self.player_attack()
+            self.check_map_transition()
 
 
 class CameraGroup(pygame.sprite.Group):
