@@ -27,6 +27,7 @@ class World:
         self.current_mini_game = None
         self.mini_game_active = False
         self.solved_mini_game = False
+        self.game_correct_answers = 0
 
     def change_map(self, map_number):
         self.player.remove(self.level.visible_sprites)
@@ -58,8 +59,11 @@ class World:
                 self.current_mini_game = MiniGame(self)
                 treasure.kill()
                 # create the image of the opened chest of the corresponding type
-                break              
-
+                break
+    
+    def add_xp(self, value):
+        self.player.exp += value
+        print(self.player.exp)
 
 class Level:
     def __init__(self, map_number, world):
@@ -139,7 +143,8 @@ class Level:
                                     [self.visible_sprites, 
                                     self.damageable_sprites], 
                                     self.obstacle_sprites,
-                                    self.damage_player)
+                                    self.damage_player,
+                                    self.world.add_xp)
 
     def check_map_transition(self):
         for sprite in self.map_transition_sprites:
@@ -170,11 +175,11 @@ class Level:
         self.visible_sprites.update()
         
         if self.world.mini_game_active:
+            self.world.solved_mini_game_exp = 0
             self.world.current_mini_game.run()
             keys = pygame.key.get_pressed()
             if keys[pygame.K_ESCAPE]:
                 self.world.mini_game_active = False
-            # run a mini_game 
         else:
             self.visible_sprites.enemy_update(self.world.player)
             self.player_attack()

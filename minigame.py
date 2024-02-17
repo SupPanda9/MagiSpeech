@@ -1,27 +1,28 @@
 import pygame
 from settings import *
-from random import randint
+from random import randint, choice
 import sliding_puzzle
 import millionaire
 
 class MiniGame:
     def __init__(self, world):
-        
-        # ((2 * WIDTH / 3, 2 * HEIGHT / 3))
-        self.display_surface = pygame.display.get_surface()
-
-        # self.x = (WIDTH - 2 * WIDTH / 3) / 2
-        # self.y = (HEIGHT - 2 * HEIGHT / 3) / 2
-
+        # self.display_surface = pygame.display.get_surface()
         self.world = world
 
     def run(self):
-        """self.world.solved_mini_game = False
-        sliding_game = sliding_puzzle.Game(self.world)
-        sliding_game.run()
-        if self.world.solved_mini_game:
-            print("yes, solved it")
-            """
-        millionaire_game = millionaire.Game(self.world)
-        millionaire_game.run()
+        games = [sliding_puzzle.Game, millionaire.Game]
+        selected_game = choice(games)
+        
+        game_instance = selected_game(self.world)
+        game_instance.run()
         self.world.mini_game_active = False
+
+        if self.world.solved_mini_game:
+            print("yes")
+            if isinstance(game_instance, sliding_puzzle.Game):
+                self.world.add_xp(minigame_stats["sliding_puzzle"])
+            else:
+                self.world.add_xp(self.world.game_correct_answers * minigame_stats["millionaire"])
+
+        self.world.solved_mini_game = False
+        self.world.game_correct_answers = 0

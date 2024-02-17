@@ -4,7 +4,7 @@ from entity import Entity
 from helpers import *
 
 class Enemy(Entity):
-    def __init__(self, name, position, groups, obstacle_sprites, damage_player):
+    def __init__(self, name, position, groups, obstacle_sprites, damage_player, add_xp):
         super().__init__(groups)
         self.sprite_type = "enemy"
 
@@ -35,6 +35,8 @@ class Enemy(Entity):
         self.vulnerable = True
         self.hit_time = None
         self.invincibility_duration = 300
+
+        self.add_xp = add_xp
 
     def import_graphics(self, name):
         self.animations = {
@@ -113,6 +115,7 @@ class Enemy(Entity):
     def check_death(self):
         if self.health <= 0:
             self.kill()
+            self.add_xp(self.exp)
 
     def hit_reaction(self):
         if not self.vulnerable:

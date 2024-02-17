@@ -29,7 +29,7 @@ class Player(Entity):
         self.stats = player_stats
         self.health = self.stats["health"]
         self.energy = self.stats["energy"]
-        self.exp = 123
+        self.exp = 0
         self.speed = self.stats["speed"]
 
         self.create_attack = create_attack

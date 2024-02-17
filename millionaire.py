@@ -1,6 +1,7 @@
 import pygame
 from random import shuffle
 import textwrap
+from settings import *
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -102,12 +103,11 @@ questions = [
     }
 ]
 
-shuffle(questions)
-questions_this_game = questions[:3]
-
 class Game:
     # Initialize pygame and create a screen
     def __init__(self, world):
+        shuffle(questions)
+        self.questions_this_game = questions[:3]
         self.screen = pygame.display.get_surface()
         self.running = True
 
@@ -124,12 +124,13 @@ class Game:
         self.correct_answers = 0
 
         # change it according to the world
-        self.exp = 150
+        self.exp = minigame_stats["millionaire"]
         self.end_game_timer = None
 
     def end_game(self):
+        self.world.game_correct_answers = self.correct_answers
+        self.world.solved_mini_game = True
         self.running = False
-        print("Еми тука, к'во да се пра'и")
 
     def draw_title(self):
         title = self.title_font.render("Who Wants to Be a Millionaire?", True, BLACK)
@@ -137,14 +138,14 @@ class Game:
         self.screen.blit(title, title_rect)
 
     def draw_question(self):
-        question = questions_this_game[self.current_question]["question"]
+        question = self.questions_this_game[self.current_question]["question"]
         question_text = self.question_font.render(question, True, BLACK)
         question_rect = question_text.get_rect(centerx=self.screen.get_rect().centerx, centery=200)
 
         self.screen.blit(question_text, question_rect)
 
     def draw_answers(self):
-        answers = questions_this_game[self.current_question]["answers"]
+        answers = self.questions_this_game[self.current_question]["answers"]
 
         for i in range(4):
             answer = answers[i]

@@ -15,3 +15,8 @@ enemies_data = {
 }
 
 player_stats = {"health" : 100, "energy" : 60, "attack" : 10, "magic" : 4, "speed" : 5}
+
+minigame_stats = {
+    "sliding_puzzle" : 250,
+    "millionaire" : 150
+}
