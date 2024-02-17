@@ -18,7 +18,6 @@ class MiniGame:
         self.world.mini_game_active = False
 
         if self.world.solved_mini_game:
-            print("yes")
             if isinstance(game_instance, sliding_puzzle.Game):
                 self.world.add_xp(minigame_stats["sliding_puzzle"])
             else:

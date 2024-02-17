@@ -31,7 +31,9 @@ class Player(Entity):
         self.energy = self.stats["energy"]
         self.exp = 0
         self.speed = self.stats["speed"]
-
+        
+        player_max_stats = {"health" : 100, "energy" : 60, "attack" : 10, "magic" : 4, "speed" : 5}
+        
         self.create_attack = create_attack
         self.destroy_attack = destroy_attack
 

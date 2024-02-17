@@ -114,9 +114,9 @@ class Game:
         self.clock = pygame.time.Clock()
         self.world = world
 
-        self.title_font = pygame.font.SysFont("Arial", 48)
-        self.question_font = pygame.font.SysFont("Arial", 32)
-        self.answer_font = pygame.font.SysFont("Arial", 24)
+        self.title_font = pygame.font.SysFont(UI_FONT, 48)
+        self.question_font = pygame.font.SysFont(UI_FONT, 32)
+        self.answer_font = pygame.font.SysFont(UI_FONT, 24)
 
         self.game_over = False
         self.current_question = 0 

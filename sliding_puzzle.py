@@ -1,6 +1,7 @@
 import pygame
 from random import choice, randint
 import textwrap
+from settings import *
 
 TILE_SIZE = 200
 TILE_NUM = 3
@@ -11,7 +12,7 @@ class Game:
         self.screen = pygame.display.get_surface()
         self.clock = pygame.time.Clock()
         self.world = world
-        self.font = pygame.font.SysFont('Arial', 32)
+        self.font = pygame.font.SysFont(UI_FONT, 32)
 
     def create_tiles(self):
         self.image = pygame.image.load(f'assets/sliding_puzzle/{randint(0,7)}.jpg')

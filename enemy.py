@@ -91,7 +91,6 @@ class Enemy(Entity):
         self.image = animation[int(self.frame_index)]
         self.rect = self.image.get_rect(center = self.hitbox.center)
 
-
     def cooldowns(self):
         current_time = pygame.time.get_ticks()
         if not self.can_attack:

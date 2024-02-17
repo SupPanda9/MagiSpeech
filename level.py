@@ -6,6 +6,7 @@ from helpers import *
 from weapon import Weapon
 from enemy import Enemy
 from minigame import MiniGame
+from ui import UI
 
 class World:
     def __init__(self):
@@ -79,6 +80,7 @@ class Level:
 
         self.world = world
         self.create_map()
+        self.ui = UI()
 
     def create_map(self):
         layouts = {
@@ -173,6 +175,7 @@ class Level:
     def run(self): 
         self.visible_sprites.custom_draw(self.world.player)
         self.visible_sprites.update()
+        self.ui.display(self.world.player)
         
         if self.world.mini_game_active:
             self.world.solved_mini_game_exp = 0
