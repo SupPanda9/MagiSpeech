@@ -4,7 +4,73 @@ from entity import Entity
 from helpers import *
 
 class Enemy(Entity):
+    """
+    Represent an enemy character in the game world.
+
+    Attributes:
+    - sprite_type: A string representing the type of sprite (in this case, 
+    "enemy").
+    - status: A string representing the current status of the enemy (e.g.,
+    "idle", "move", "attack").
+    - image: A Pygame surface representing the current image of the enemy.
+    - rect: A Pygame rect representing the position and size of the enemy's
+    image.
+    - hitbox: A Pygame rect representing the hitbox of the enemy for
+    collision detection.
+    - obstacle_sprites: A Pygame sprite group representing obstacle sprites
+    in the level.
+    - enemy_name: A string representing the name of the enemy character.
+    - health: An integer representing the current health points of the enemy.
+    - exp: An integer representing the experience points granted to the
+    player upon defeating the enemy.
+    - speed: An integer representing the movement speed of the enemy.
+    - attack_damage: An integer representing the damage inflicted by the
+    enemy's attacks.
+    - resistance: An integer representing the resistance of the enemy to
+    damage.
+    - attack_radius: An integer representing the radius within which the
+    enemy can perform attacks.
+    - notice_radius: An integer representing the radius within which the
+    enemy notices the player.
+    - attack_type: A string representing the type of attack performed by
+    the enemy.
+    - can_attack: A boolean indicating whether the enemy can perform an
+    attack.
+    - attack_time: An integer representing the time of the last attack
+    performed by the enemy.
+    - attack_cooldown: An integer representing the cooldown period
+    between attacks.
+    - damage_player: A function reference to damage the player character.
+    - add_xp: A function reference to add experience points to the player 
+    character.
+    - vulnerable: A boolean indicating whether the enemy is currently
+    vulnerable to damage.
+    - hit_time: An integer representing the time of the last hit received
+    by the enemy.
+    - invincibility_duration: An integer representing the duration of
+    invincibility after being hit.
+
+    Methods:
+    - __init__(self, name, position, groups, obstacle_sprites, 
+                damage_player, add_xp): 
+    Initialize an enemy instance with the given attributes.
+    - import_graphics(self, name): Load enemy graphics/animations from files.
+    - get_player_distance_direction(self, player): Calculate the distance and
+    direction vector from the enemy to the player.
+    - get_status(self, player): Determine the status of the enemy based on the
+    player's position.
+    - actions(self, player): Perform actions based on the enemy's status.
+    - animate(self): Animate the enemy based on its current status.
+    - cooldowns(self): Manage cooldowns for the enemy's actions.
+    - get_damage(self, player, attack_type): Inflict damage on the enemy.
+    - check_death(self): Check if the enemy has been defeated.
+    - hit_reaction(self): Handle the reaction of the enemy when hit.
+    - update(self): Update the enemy's state and behavior.
+    - enemy_update(self, player): Update the enemy's behavior based on the
+    player's position.
+    """
     def __init__(self, name, position, groups, obstacle_sprites, damage_player, add_xp):
+        """Initialize an enemy instance."""
         super().__init__(groups)
         self.sprite_type = "enemy"
 
@@ -39,6 +105,12 @@ class Enemy(Entity):
         self.add_xp = add_xp
 
     def import_graphics(self, name):
+        """
+        Load enemy graphics/animations from files.
+
+        Parameters:
+        - name: String representing the name of the enemy.
+        """
         self.animations = {
             "idle" : [], 
             "move" : [], 
@@ -49,6 +121,17 @@ class Enemy(Entity):
             self.animations[animation] = import_folder(main_path + animation)
 
     def get_player_distance_direction(self, player):
+        """
+        Calculate the distance and direction vector from the enemy to 
+        the player.
+
+        Parameters:
+        - player: Instance of the Player class representing the player
+        character.
+
+        Returns:
+        - Tuple containing the distance and direction vector.
+        """
         enemy_vec = pygame.math.Vector2(self.rect.center)
         player_vec = pygame.math.Vector2(player.rect.center)
         distance = (player_vec - enemy_vec).magnitude()
@@ -60,6 +143,13 @@ class Enemy(Entity):
         return (distance, direction)
 
     def get_status(self, player):
+        """
+        Determine the status of the enemy based on the player's position.
+
+        Parameters:
+        - player: Instance of the Player class representing the player
+        character.
+        """
         distance = self.get_player_distance_direction(player)[0]
         
         if distance <= self.attack_radius and self.can_attack:
@@ -72,6 +162,13 @@ class Enemy(Entity):
             self.status = "idle"
 
     def actions(self, player):
+        """
+        Perform actions based on the enemy's status.
+
+        Parameters:
+        - player: Instance of the Player class representing the player
+        character.
+        """
         if self.status == "attack":
             self.attack_time = pygame.time.get_ticks()
             self.damage_player(self.attack_damage, self.attack_type)
@@ -81,6 +178,7 @@ class Enemy(Entity):
             self.direction = pygame.math.Vector2()
 
     def animate(self):
+        """Animate the enemy based on its current status."""
         animation = self.animations[self.status]
         self.frame_index += self.animation_speed
         if self.frame_index >= len(self.animations[self.status]):
@@ -92,6 +190,7 @@ class Enemy(Entity):
         self.rect = self.image.get_rect(center = self.hitbox.center)
 
     def cooldowns(self):
+        """Manage cooldowns for the enemy's actions."""
         current_time = pygame.time.get_ticks()
         if not self.can_attack:
             if current_time - self.attack_time >= self.attack_cooldown:
@@ -102,6 +201,13 @@ class Enemy(Entity):
                 self.vulnerable = True
 
     def get_damage(self, player, attack_type):
+        """
+        Inflict damage on the enemy.
+
+        Parameters:
+        - player: Instance of the Player class representing the player character.
+        - attack_type: String representing the type of attack.
+        """
         if self.vulnerable:
             self.direction = self.get_player_distance_direction(player)[1]
             
@@ -112,15 +218,18 @@ class Enemy(Entity):
             self.vulnerable = False
     
     def check_death(self):
+        """Check if the enemy has been defeated."""
         if self.health <= 0:
             self.kill()
             self.add_xp(self.exp)
 
     def hit_reaction(self):
+        """Handle the reaction of the enemy when hit."""
         if not self.vulnerable:
             self.direction *= -self.resistance
 
     def update(self):
+        """Update the enemy's state and behavior."""
         self.hit_reaction()
         self.move(self.speed)
         self.animate()
@@ -128,5 +237,12 @@ class Enemy(Entity):
         self.check_death()
 
     def enemy_update(self, player):
+        """
+        Update the enemy's behavior based on the player's position.
+
+        Parameters:
+        - player: Instance of the Player class representing the player
+        character.
+        """
         self.get_status(player)
         self.actions(player)

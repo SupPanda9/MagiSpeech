@@ -7,6 +7,8 @@ from weapon import Weapon
 from enemy import Enemy
 from minigame import MiniGame
 from hud import HUD
+from magic import Magic
+from particles import AnimationPlayer
 
 class World:
     """
@@ -24,6 +26,8 @@ class World:
     - mini_game_active: Boolean indicating whether a mini-game is currently active.
     - solved_mini_game: Boolean indicating whether the current mini-game has been solved correctly.
     - game_correct_answers: Integer representing the number of correct answers in the current mini-game.
+    - animation_player: Instance of AnimationPlayer for handling magic attack animations.
+    - magic: Instance of Magic for handling player magic abilities.
     """
     def __init__(self):
         """
@@ -42,12 +46,16 @@ class World:
                             [self.level.visible_sprites], 
                             self.level.obstacle_sprites,
                             self.create_physical_attack,
-                            self.destroy_physical_attack)
+                            self.destroy_physical_attack,
+                            self.create_magic)
         
         self.current_mini_game = None
         self.mini_game_active = False
         self.solved_mini_game = False
         self.game_correct_answers = 0
+
+        self.animation_player = AnimationPlayer()
+        self.magic = Magic(self.animation_player)
 
     def change_map(self, map_number):
         """
@@ -72,6 +80,14 @@ class World:
     def create_physical_attack(self):
         """Create a physical attack instance for the player."""
         self.current_attack = Weapon(self.player, [self.level.visible_sprites, self.level.damaging_sprites])
+
+    def create_magic(self, style, strength, cost):
+        """Create a magic attack instances for the player."""
+        if style == "heal":
+            self.magic.heal(self.player, strength, cost, [self.level.visible_sprites])
+
+        if style == "flame":
+            self.magic.flame(self.player, cost, [self.level.visible_sprites, self.level.damaging_sprites])
 
     def destroy_physical_attack(self):
         """Destroy the current physical attack instance."""
@@ -209,7 +225,7 @@ class Level:
                                 elif col == "392":
                                     monster_name = "raccoon"
                                 elif col == "393":
-                                    monster_name = "squid"
+                                    monster_name = "axolotl"
                                 Enemy(monster_name, 
                                     (x,y), 
                                     [self.visible_sprites, 
@@ -262,7 +278,7 @@ class Level:
         """
         self.visible_sprites.custom_draw(self.world.player)
         self.visible_sprites.update()
-        self.ui.display(self.world.player)
+        self.hud.display(self.world.player)
         
         if self.world.mini_game_active:
             self.world.solved_mini_game_exp = 0
