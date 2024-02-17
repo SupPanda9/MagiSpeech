@@ -8,13 +8,40 @@ TILE_NUM = 3
 PUZZLE_SIZE = TILE_SIZE * TILE_NUM
 
 class Game:
+    """
+    Initialize the game and manage the puzzle-solving process.
+
+    Parameters:
+    - world: The instance of the game world.
+
+    Attributes:
+    - screen: The Pygame surface for rendering.
+    - clock: Pygame clock object for controlling the frame rate.
+    - world: The instance of the game world.
+    - font: The font used for rendering text.
+    """
     def __init__(self, world):
+        """
+        Initialize the game with the given world instance.
+
+        Parameters:
+        - world: The instance of the game world.
+        """
         self.screen = pygame.display.get_surface()
         self.clock = pygame.time.Clock()
         self.world = world
         self.font = pygame.font.SysFont(UI_FONT, 32)
 
     def create_tiles(self):
+        """
+        Create the tiles for the sliding puzzle by
+        subsurfacing the whole image into parts.
+        
+        Attributes:
+        - image: The image used for the puzzle.
+        - reference_image: The scaled reference image.
+        - tiles: List containing Tile instances.
+        """
         self.image = pygame.image.load(f'assets/sliding_puzzle/{randint(0,7)}.jpg')
         self.image = pygame.transform.scale(self.image, (PUZZLE_SIZE, PUZZLE_SIZE))
         self.reference_image = self.image
@@ -26,6 +53,14 @@ class Game:
                 self.tiles.append(Tile(self, tile, i, j))
 
     def run(self):
+        """
+        Run the sliding puzzle game loop.
+
+        Events:
+        - Arrow keys: Move the tiles.
+        - Space: Shuffle the puzzle.
+        - Escape: End the game.
+        """
         self.create_tiles()
         self.frame = Frame(self, self.tiles)
         self.running = True
@@ -46,13 +81,35 @@ class Game:
             pygame.display.flip()
 
     def end_game(self):
+        """End the sliding puzzle game."""
         pygame.time.wait(800)
         self.running = False
         self.world.solved_mini_game = self.frame.solved
 
 
 class Tile:
+    """
+    Represent a single tile in the sliding puzzle.
+
+    Parameters:
+    - game: The instance of the Game class.
+    - image: The image associated with the tile.
+    - row: The row index of the tile in the puzzle grid.
+    - col: The column index of the tile in the puzzle grid.
+
+    Attributes:
+    - image: The image associated with the tile.
+    - game: The instance of the Game class.
+    - row: The row index of the tile in the puzzle grid.
+    - col: The column index of the tile in the puzzle grid.
+    - puzzle_x: The x-coordinate of the puzzle grid.
+    - puzzle_y: The y-coordinate of the puzzle grid.
+    - x: The current x-coordinate of the tile.
+    - y: The current y-coordinate of the tile.
+    - rect: The rectangular area occupied by the tile.
+    """
     def __init__(self, game, image, row, col):
+        """Initialize a tile for the sliding puzzle."""
         self.image = image
         self.game = game
         self.row = row
@@ -64,9 +121,16 @@ class Tile:
         self.rect = pygame.Rect(self.x, self.y, TILE_SIZE, TILE_SIZE)
 
     def draw(self, screen):
+        """Draw the tile on the screen."""
         screen.blit(self.image, (self.x, self.y))
 
     def move(self, direction):
+        """
+        Move the tile in a given direction.
+
+        Parameters:
+        - direction: The direction to move the tile ('up', 'down', 'left', 'right').
+        """
         if direction == 'up':
             self.row -= 1
         elif direction == 'down':
@@ -81,7 +145,24 @@ class Tile:
 
 
 class Frame:
+    """
+    Represent the frame, containing the tiles in the sliding puzzle.
+
+    Parameters:
+    - game: The instance of the Game class.
+    - tiles: A list of Tile objects representing the tiles in the puzzle.
+
+    Attributes:
+    - tiles: A list of Tile objects representing the tiles in the puzzle.
+    - empty_row: The row index of the empty tile.
+    - empty_col: The column index of the empty tile.
+    - shuffling: A boolean indicating whether the puzzle is currently being shuffled.
+    - moves: The number of moves made by the player.
+    - solved: A boolean indicating whether the puzzle has been solved.
+    - font: The font used for rendering text.
+    """
     def __init__(self, game, tiles):
+        """Initialize the frame(grid) for the sliding puzzle."""
         self.tiles = tiles
         self.empty_row = TILE_NUM - 1
         self.empty_col = TILE_NUM - 1
@@ -93,6 +174,7 @@ class Frame:
         self.game = game
 
     def draw(self, screen):
+        """Draw the frame on the screen."""
         screen.fill((255, 255, 255))
         if self.solved:
             for tile in self.tiles:
@@ -103,6 +185,13 @@ class Frame:
         self.draw_text(screen)
 
     def draw_text(self, screen):
+        """
+        Draw text information on the screen about the moves
+        that he player used and whetther he successfully solved it.
+
+        Parameters:
+        - screen: The Pygame surface for rendering.
+        """
         text = self.font.render(f'Moves: {self.moves}', True, (0, 0, 0))
         screen.blit(text, (10, 10))
         if self.solved:
@@ -111,6 +200,9 @@ class Frame:
             self.game.running = False
 
     def shuffle(self):
+        """
+        Shuffle the tiles in the puzzle.
+        """
         directions = ['up', 'down', 'left', 'right']
         for i in range(100):
             direction = choice(directions)
@@ -120,6 +212,13 @@ class Frame:
         self.solved = False
 
     def move_tile(self, direction, shuffle=False):
+        """
+        Move a tile in the specified direction.
+
+        Parameters:
+        - direction: The direction in which to move the tile.
+        - shuffle: A boolean indicating whether the shuffle mode is enabled.
+        """
         if direction == 'up' and self.empty_row < TILE_NUM - 1:
             row = self.empty_row + 1
             col = self.empty_col
@@ -146,6 +245,9 @@ class Frame:
                     break
         
     def check_solution(self):
+        """
+        Check if the puzzle has been solved.
+        """
         for i, tile in enumerate(self.tiles):
             row = i // TILE_NUM
             col = i % TILE_NUM
@@ -157,6 +259,12 @@ class Frame:
         self.game.end_game()
 
     def handle_event(self, event):
+        """
+        Handle user input events.
+
+        Parameters:
+        - event: The Pygame event object.
+        """
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 self.game.end_game()

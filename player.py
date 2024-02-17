@@ -13,6 +13,7 @@ class Player(Entity):
         # small part of the player above objects, and allow him to move easier in one tile
         # sized spaces
         self.hitbox = self.rect.inflate(-2, -26)
+        self.position = position
 
         self.import_player_assets()
         self.status = "down"

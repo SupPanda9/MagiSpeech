@@ -4,7 +4,20 @@ from level import World, Level
 
 
 class Game:
+    """
+    The main game class, responsible for initializing Pygame, managing the game loop,
+    handling user input, and updating the game world.
+
+    Attributes:
+    - screen: Pygame window surface.
+    - clock: Pygame clock object for controlling frame rate.
+    - world: Instance of the game world containing levels, player, and other game state related data.
+    """
     def __init__(self):
+        """
+        Initialize the Game object by setting up Pygame window, caption, and clock,
+        and creating the game world.
+        """
         pygame.init()
         self.screen = pygame.display.set_mode((WIDTH,HEIGHT))
         pygame.display.set_caption("MagiSpeech")
@@ -13,6 +26,9 @@ class Game:
         self.world = World()
 
     def run(self):
+        """
+        Handle events, update the game world, and render the game.
+        """
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:

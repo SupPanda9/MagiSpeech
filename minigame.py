@@ -5,11 +5,35 @@ import sliding_puzzle
 import millionaire
 
 class MiniGame:
+    """
+    Controller class for managing and executing mini-games within
+    the game environment.
+
+    Parameters:
+    - world: An instance of the World class representing the game
+    world containing the mini-game.
+
+    Attributes:
+    - world: An instance of the World class representing the game.
+
+    Methods:
+        run(): Executes a randomly selected mini-game from a 
+        predefined list and updates the game state based on the outcome.
+    """
     def __init__(self, world):
-        # self.display_surface = pygame.display.get_surface()
+        """
+        Initialize the MiniGame instance.
+
+        Parameters:
+        - world (World): The World instance containing the mini-game.
+        """
         self.world = world
 
     def run(self):
+        """
+        Run a randomly selected mini-game and add experience from
+        it to the player.
+        """
         games = [sliding_puzzle.Game, millionaire.Game]
         selected_game = choice(games)
         

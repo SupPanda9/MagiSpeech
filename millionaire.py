@@ -104,8 +104,42 @@ questions = [
 ]
 
 class Game:
-    # Initialize pygame and create a screen
+    """
+    A class representing the Who Wants to Be a Millionaire game.
+
+    Attributes:
+    - world: The instance of the game world.
+    - screen: The game display surface.
+    - running: Indicates whether the game is currently running.
+    - clock: The clock object for controlling the game's frame rate.
+    - title_font: The font object for rendering the title text.
+    - question_font: The font object for rendering the question text.
+    - answer_font: The font object for rendering the answer text.
+    - game_over: Indicates whether the game is over.
+    - current_question: Index of the current question being displayed.
+    - selected_answer: Index of the currently selected answer.
+    - correct_answers: Number of correct answers given by the player.
+    - exp: Experience points awarded for each correct answer.
+    - end_game_timer: Timer for ending the game after a delay.
+
+    Methods:
+    end_game(): Ends the game and updates the world with the player's score.
+    draw_title(): Renders and displays the game title.
+    draw_question(): Renders and displays the current question.
+    draw_answers(): Renders and displays the answer choices.
+    draw_selection(): Renders and displays the selection indicator.
+    draw_score(): Renders and displays the player's score.
+    draw_game_over(): Renders and displays the game over screen.
+    draw_instructions(): Renders and displays game instructions.
+    run(): Main game loop responsible for running the game logic and rendering.
+    """
     def __init__(self, world):
+        """
+        Initialize the game with the given world instance.
+
+        Parameters:
+        - world: The instance of the game world.
+        """
         shuffle(questions)
         self.questions_this_game = questions[:3]
         self.screen = pygame.display.get_surface()
@@ -128,16 +162,19 @@ class Game:
         self.end_game_timer = None
 
     def end_game(self):
+        """End the game and update the world with the player's score."""
         self.world.game_correct_answers = self.correct_answers
         self.world.solved_mini_game = True
         self.running = False
 
     def draw_title(self):
+        """Render and display the game title."""
         title = self.title_font.render("Who Wants to Be a Millionaire?", True, BLACK)
         title_rect = title.get_rect(centerx=self.screen.get_rect().centerx, centery=50)
         self.screen.blit(title, title_rect)
 
     def draw_question(self):
+        """Render and display the current question."""
         question = self.questions_this_game[self.current_question]["question"]
         question_text = self.question_font.render(question, True, BLACK)
         question_rect = question_text.get_rect(centerx=self.screen.get_rect().centerx, centery=200)
@@ -145,6 +182,7 @@ class Game:
         self.screen.blit(question_text, question_rect)
 
     def draw_answers(self):
+        """Render and display the answer choices."""
         answers = self.questions_this_game[self.current_question]["answers"]
 
         for i in range(4):
@@ -167,6 +205,7 @@ class Game:
             self.screen.blit(answer_text, answer_rect)
 
     def draw_selection(self):
+        """Render and display the selection indicator."""
         if self.selected_answer != -1:
             selected_rect = pygame.Rect(0, 0, 200, 50)
             if self.selected_answer == 0: # Top left
@@ -180,12 +219,14 @@ class Game:
             pygame.draw.rect(self.screen, RED, selected_rect.inflate(20, 10), 5)
 
     def draw_score(self):
+        """Render and display the player's score."""
         score = self.answer_font.render(f"Score: {self.correct_answers}/3", True, BLACK)
         score_rect = score.get_rect()
         score_rect.bottomright = (780, 580)
         self.screen.blit(score, score_rect)
 
     def draw_game_over(self):
+        """Render and display the game over screen."""
         self.screen.fill(WHITE)
 
         message = self.title_font.render(f"You got {self.correct_answers}/3 correct!", True, BLACK)
@@ -203,6 +244,7 @@ class Game:
         pygame.time.wait(1000)
 
     def draw_instructions(self):
+        """Render and display game instructions."""
         lines = textwrap.wrap(f'You can select an answer with Space and choose it with Enter.', 30)
         y_offset = 0
         for line in lines:
@@ -212,7 +254,10 @@ class Game:
             y_offset += text.get_height()
 
     def run(self):
-
+        """
+        Run the main game loop, responsible for 
+        updating the game logic and rendering.
+        """
         while self.running:
             self.clock.tick(60)
 
