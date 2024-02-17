@@ -34,3 +34,5 @@ class UI:
     def display(self, player):
         self.show_bar(player.health, player.stats["health"], self.health_bar_rect, HEALTH_COLOR)
         self.show_bar(player.energy, player.stats["energy"], self.energy_bar_rect, ENERGY_COLOR)
+
+        self.show_exp(player.exp)
