@@ -1,5 +1,6 @@
 import pygame
 from random import choice, randint
+import textwrap
 
 TILE_SIZE = 200
 TILE_NUM = 3
@@ -10,16 +11,18 @@ class Game:
         self.screen = pygame.display.get_surface()
         self.clock = pygame.time.Clock()
         self.world = world
+        self.font = pygame.font.SysFont('Arial', 32)
 
     def create_tiles(self):
         self.image = pygame.image.load(f'assets/sliding_puzzle/{randint(0,7)}.jpg')
         self.image = pygame.transform.scale(self.image, (PUZZLE_SIZE, PUZZLE_SIZE))
+        self.reference_image = self.image
+        self.reference_image = pygame.transform.scale(self.reference_image, (PUZZLE_SIZE/2, PUZZLE_SIZE/2))
         self.tiles = []
         for i in range(TILE_NUM):
             for j in range(TILE_NUM):
                 tile = self.image.subsurface(j * TILE_SIZE, i * TILE_SIZE, TILE_SIZE, TILE_SIZE)
                 self.tiles.append(Tile(self, tile, i, j))
-        # self.tiles.pop()
 
     def run(self):
         self.create_tiles()
@@ -28,6 +31,15 @@ class Game:
         while self.running:
             self.clock.tick(60)
             self.frame.draw(self.screen)
+            self.screen.blit(self.reference_image, (10, (self.screen.get_height() - PUZZLE_SIZE) // 2))
+
+            lines = textwrap.wrap(f'You can move the tiles with the arrows and forfeit the game with Escape.', 30)
+            y_offset = 0
+            for line in lines:
+                text = self.font.render(line, True, (0, 0, 0))
+                self.screen.blit(text, (10, (self.screen.get_height() - PUZZLE_SIZE) // 2 + PUZZLE_SIZE // 2 + 10 + y_offset))
+                y_offset += text.get_height()
+
             for event in pygame.event.get():
                 self.frame.handle_event(event)
             pygame.display.flip()
