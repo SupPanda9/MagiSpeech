@@ -11,12 +11,13 @@ class Game:
     Attributes:
     - screen: Pygame window surface.
     - clock: Pygame clock object for controlling frame rate.
-    - world: Instance of the game world containing levels, player, and other game state related data.
+    - world: Instance of the game world containing levels, player,
+    and other game state related data.
     """
     def __init__(self):
         """
-        Initialize the Game object by setting up Pygame window, caption, and clock,
-        and creating the game world.
+        Initialize the Game object by setting up Pygame window, caption,
+        and clock,and creating the game world.
         """
         pygame.init()
         self.screen = pygame.display.set_mode((WIDTH,HEIGHT))

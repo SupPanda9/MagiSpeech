@@ -241,8 +241,7 @@ class Enemy(Entity):
         Update the enemy's behavior based on the player's position.
 
         Parameters:
-        - player: Instance of the Player class representing the player
-        character.
+        - player: Instance of the Player class representing the player character.
         """
         self.get_status(player)
         self.actions(player)

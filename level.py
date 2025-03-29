@@ -225,7 +225,7 @@ class Level:
                                 elif col == "392":
                                     monster_name = "raccoon"
                                 elif col == "393":
-                                    monster_name = "axolotl"
+                                    monster_name = "squid"
                                 Enemy(monster_name, 
                                     (x,y), 
                                     [self.visible_sprites, 
